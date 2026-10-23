@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="zh-Hant">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>小小古生物學家</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <button id="mute" class="mute" type="button" aria-label="切換音效">🔊</button>
+
+  <!-- 標題 -->
+  <section id="title" class="screen active">
+    <div class="title-card">
+      <div id="title-boy" class="title-boy"></div>
+      <div class="title-text">
+        <p class="eyebrow">🦴 化石大冒險 🦴</p>
+        <h1>小小古生物學家</h1>
+        <p class="lead">你挖到了一塊神秘的恐龍化石！<br>闖過 <b>15 個難關</b>，答對 <b>12 題以上</b>，<br>就能把化石送進博物館展示！</p>
+        <button id="btn-start" class="big-btn" type="button">開始挖化石 ⛏️</button>
+      </div>
+      <div class="title-villain">
+        <div id="title-doctor"></div>
+        <p class="warn">小心！答對不到 12 題，<br>邪惡博士會把化石搶走！</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- 開場動畫 -->
+  <section id="intro" class="screen">
+    <div class="stage desert"></div>
+    <button id="btn-identify" class="big-btn hidden" type="button">開始鑑定化石 🔍</button>
+  </section>
+
+  <!-- 答題 -->
+  <section id="quiz" class="screen">
+    <header class="quiz-head">
+      <div id="progress" class="progress"></div>
+      <div class="score-box">答對 <b id="score">0</b> 題</div>
+    </header>
+    <div class="quiz-body">
+      <div class="quiz-left">
+        <div id="fossil-card" class="fossil-card"></div>
+        <p id="fossil-label" class="fossil-label"></p>
+        <div id="thinker" class="thinker"></div>
+      </div>
+      <div class="quiz-right">
+        <p id="stage-tag" class="stage-tag"></p>
+        <h2 id="q-text" class="q-text"></h2>
+        <p id="q-hint" class="q-hint"></p>
+        <div id="options" class="options"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 答題回饋 -->
+  <div id="feedback" class="overlay hidden" role="dialog" aria-modal="true">
+    <div class="fb-card">
+      <div class="fx"></div>
+      <div class="fb-char"></div>
+      <div class="fb-text">
+        <h2></h2>
+        <p class="fb-answer"></p>
+        <p class="fb-explain"></p>
+        <p class="fb-status"></p>
+        <button class="fb-next big-btn" type="button">下一關 ➜</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 結局 -->
+  <section id="ending" class="screen">
+    <div class="stage"></div>
+    <div id="report" class="report hidden">
+      <h2></h2>
+      <p class="stars"></p>
+      <div class="dino-card"></div>
+      <h3 class="review-title">📖 複習一下</h3>
+      <ol class="review"></ol>
+      <div class="report-actions">
+        <button class="again big-btn" type="button">再玩一次</button>
+        <button class="home ghost-btn" type="button">回到首頁</button>
+      </div>
+    </div>
+  </section>
+
+  <script src="js/data.js"></script>
+  <script src="js/art.js"></script>
+  <script src="js/game.js"></script>
+</body>
+</html>
