@@ -475,6 +475,8 @@ document.addEventListener('DOMContentLoaded', () => {
   $('#player-code').value = Player.load();
   renderTitleBoard();
   $('#player-code').addEventListener('keydown', e => { if (e.key === 'Enter') startFromTitle(); });
+  // 邊打邊存，就算沒按開始就離開，下次也會自動帶入
+  $('#player-code').addEventListener('input', e => { const code = e.target.value.trim(); if (code) Player.save(code); });
   $('#btn-start').onclick = startFromTitle;
   $('#btn-identify').onclick = () => { SFX.click(); renderQuestion(); };
   $('#feedback .fb-next').onclick = nextQuestion;
