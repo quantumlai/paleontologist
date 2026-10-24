@@ -17,6 +17,11 @@
         <p class="eyebrow">🦴 化石大冒險 🦴</p>
         <h1>小小古生物學家</h1>
         <p class="lead">你挖到了一塊神秘的恐龍化石！<br>闖過 <b>15 個難關</b>，答對 <b>12 題以上</b>，<br>就能把化石送進博物館展示！</p>
+        <label class="player-field">
+          <span>🪪 玩家代碼</span>
+          <input id="player-code" type="text" maxlength="16" autocomplete="off" placeholder="例如：小恐龍">
+        </label>
+        <p id="player-error" class="player-error hidden">請先輸入玩家代碼喔！</p>
         <button id="btn-start" class="big-btn" type="button">開始挖化石 ⛏️</button>
       </div>
       <div class="title-villain">
@@ -74,6 +79,11 @@
     <div id="report" class="report hidden">
       <h2></h2>
       <p class="stars"></p>
+      <div class="leaderboard">
+        <h3>🏆 排行榜 <small>（依累積答對題數）</small></h3>
+        <p class="lb-me"></p>
+        <ol class="lb-list"></ol>
+      </div>
       <div class="dino-card"></div>
       <h3 class="review-title">📖 複習一下</h3>
       <ol class="review"></ol>
@@ -86,6 +96,7 @@
 
   <script src="js/data.js"></script>
   <script src="js/art.js"></script>
+  <script src="js/leaderboard.js"></script>
   <script src="js/game.js"></script>
 </body>
 </html>

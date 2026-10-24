@@ -9,7 +9,7 @@ const shuffle = arr => { const a = [...arr]; for (let i = a.length - 1; i > 0; i
 const pickN = (arr, n) => shuffle(arr).slice(0, n);
 const fmtSize = n => `約 ${n} 公尺`;
 
-const state = { dino: null, questions: [], idx: 0, score: 0, answers: [], muted: false };
+const state = { player: '', dino: null, questions: [], idx: 0, score: 0, answers: [], muted: false, submitted: null };
 
 /* ---------- 音效（WebAudio 合成，不需要音檔） ---------- */
 
@@ -277,8 +277,9 @@ function nextQuestion() {
   $('#feedback').classList.add('hidden');
   locked = false;
   state.idx++;
-  if (state.idx < TOTAL) renderQuestion();
-  else state.score >= PASS_SCORE ? playMuseum() : playDoctor();
+  if (state.idx < TOTAL) return renderQuestion();
+  state.submitted = Leaderboard.submit(state.player, state.score);
+  state.score >= PASS_SCORE ? playMuseum() : playDoctor();
 }
 
 /* ---------- 結局：博物館展示 ---------- */
@@ -377,9 +378,31 @@ async function playDoctor() {
 
 /* ---------- 成績與複習 ---------- */
 
+async function renderLeaderboard() {
+  const box = $('#report .leaderboard');
+  const list = box.querySelector('.lb-list');
+  list.innerHTML = '<li class="lb-empty">讀取中…</li>';
+  const me = await state.submitted;
+  const [top, mine] = await Promise.all([Leaderboard.top(10), Leaderboard.rankOf(state.player)]);
+  box.querySelector('.lb-me').textContent = me && mine
+    ? `${state.player}：這局答對 ${state.score} 題，累積答對 ${me.total} 題（玩了 ${me.games} 局），目前第 ${mine.rank} 名！`
+    : '';
+  list.innerHTML = '';
+  top.forEach(r => {
+    const li = document.createElement('li');
+    li.className = r.code === state.player ? 'me' : '';
+    li.innerHTML = '<span class="lb-rank"></span><span class="lb-code"></span><span class="lb-total"></span>';
+    li.querySelector('.lb-rank').textContent = ['🥇', '🥈', '🥉'][r.rank - 1] || r.rank;
+    li.querySelector('.lb-code').textContent = r.code; // 玩家輸入的文字一律用 textContent，避免被當成 HTML
+    li.querySelector('.lb-total').textContent = `${r.total} 題`;
+    list.appendChild(li);
+  });
+}
+
 function showReport(won) {
   const d = state.dino;
   const r = $('#report');
+  renderLeaderboard();
   r.querySelector('h2').textContent = won ? `🏛️ 任務成功！答對 ${state.score} / ${TOTAL} 題` : `😈 化石被搶走了… 答對 ${state.score} / ${TOTAL} 題`;
   r.querySelector('.stars').textContent = '⭐'.repeat(state.score) + '☆'.repeat(TOTAL - state.score);
   r.querySelector('.dino-card').innerHTML = `
@@ -418,9 +441,21 @@ function newGame() {
   playIntro();
 }
 
+function startFromTitle() {
+  const input = $('#player-code');
+  const code = input.value.trim();
+  $('#player-error').classList.toggle('hidden', !!code);
+  if (!code) { input.focus(); return; }
+  state.player = code;
+  Player.save(code);
+  newGame();
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   renderTitle();
-  $('#btn-start').onclick = newGame;
+  $('#player-code').value = Player.load();
+  $('#player-code').addEventListener('keydown', e => { if (e.key === 'Enter') startFromTitle(); });
+  $('#btn-start').onclick = startFromTitle;
   $('#btn-identify').onclick = () => { SFX.click(); renderQuestion(); };
   $('#feedback .fb-next').onclick = nextQuestion;
   $('#report .again').onclick = newGame;

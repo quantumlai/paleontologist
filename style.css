@@ -274,6 +274,28 @@ h1 { font-size: clamp(32px, 4.6vw, 56px); white-space: nowrap; margin: 6px 0 12p
 }
 .bubble::after { content: ""; position: absolute; left: 30%; bottom: -18px; border: 10px solid transparent; border-top: 10px solid #7a1418; }
 
+/* ---------- 玩家代碼 ---------- */
+.player-field { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 14px; font-weight: 800; font-size: 18px; }
+.player-field input {
+  width: 200px; padding: 10px 14px; font: inherit; font-size: 20px; border-radius: 14px;
+  border: 3px solid var(--sand-dark); background: #fff; color: var(--ink);
+}
+.player-field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(242, 169, 59, .25); }
+.player-error { margin: -6px 0 12px; color: #a3262c; font-weight: 800; }
+
+/* ---------- 排行榜 ---------- */
+.leaderboard { background: #eef4ff; border: 3px solid #9bb8e6; border-radius: 20px; padding: 14px 18px; margin-bottom: 16px; }
+.leaderboard h3 { margin: 0 0 6px; }
+.leaderboard h3 small { font-size: 14px; color: #5a6f95; }
+.lb-me { margin: 0 0 10px; font-weight: 800; color: #2f5fa3; }
+.lb-list { list-style: none; padding: 0; margin: 0; display: grid; gap: 6px; }
+.lb-list li { display: grid; grid-template-columns: 44px 1fr auto; align-items: center; gap: 8px; padding: 8px 12px; background: #fff; border-radius: 12px; font-size: 18px; }
+.lb-list li.me { background: #fff3d6; outline: 3px solid var(--accent); font-weight: 800; }
+.lb-rank { text-align: center; font-weight: 900; }
+.lb-code { overflow-wrap: anywhere; }
+.lb-total { font-weight: 800; color: #2f7d33; }
+.lb-empty { justify-content: center; color: #5a6f95; }
+
 /* ---------- 成績 ---------- */
 .report {
   max-width: 1000px; margin: 0 auto 40px; background: var(--paper); border: 5px solid var(--brown);
