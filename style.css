@@ -283,6 +283,19 @@ h1 { font-size: clamp(32px, 4.6vw, 56px); white-space: nowrap; margin: 6px 0 12p
 .player-field input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 4px rgba(242, 169, 59, .25); }
 .player-error { margin: -6px 0 12px; color: #a3262c; font-weight: 800; }
 
+.title-progress { margin: -4px 0 14px; font-weight: 800; color: #2f7d33; min-height: 1.4em; }
+
+/* ---------- 知識圖鑑 ---------- */
+.knowledge { background: #eef8ee; border: 3px solid #9cd09f; border-radius: 20px; padding: 14px 18px; margin-bottom: 16px; }
+.knowledge h3 { margin: 0 0 6px; }
+.kn-new { margin: 0 0 10px; font-weight: 800; color: #2f7d33; font-size: 18px; }
+.knowledge .bar { height: 14px; border-radius: 999px; background: #fff; border: 2px solid #9cd09f; overflow: hidden; }
+.knowledge .bar i { display: block; height: 100%; background: linear-gradient(90deg, #6bcb77, #2f9e44); border-radius: 999px; }
+.kn-total { display: grid; gap: 6px; margin-bottom: 12px; font-size: 18px; }
+.kn-topics { list-style: none; padding: 0; margin: 0; display: grid; grid-template-columns: repeat(auto-fill, minmax(260px, 1fr)); gap: 8px 18px; }
+.kn-topics li { display: grid; grid-template-columns: 7em 1fr 4.5em; align-items: center; gap: 8px; font-size: 15px; }
+.kn-count { text-align: right; font-weight: 700; color: #2f7d33; }
+
 /* ---------- 排行榜 ---------- */
 .leaderboard { background: #eef4ff; border: 3px solid #9bb8e6; border-radius: 20px; padding: 14px 18px; margin-bottom: 16px; }
 .leaderboard h3 { margin: 0 0 6px; }

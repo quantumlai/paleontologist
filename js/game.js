@@ -9,7 +9,7 @@ const shuffle = arr => { const a = [...arr]; for (let i = a.length - 1; i > 0; i
 const pickN = (arr, n) => shuffle(arr).slice(0, n);
 const fmtSize = n => `約 ${n} 公尺`;
 
-const state = { player: '', dino: null, questions: [], idx: 0, score: 0, answers: [], muted: false, submitted: null };
+const state = { player: '', dino: null, questions: [], idx: 0, score: 0, answers: [], muted: false, submitted: null, learned: 0 };
 
 /* ---------- 音效（WebAudio 合成，不需要音檔） ---------- */
 
@@ -71,7 +71,7 @@ function buildQuestions(d) {
   const others = DINOS.filter(x => x.id !== d.id);
   const families = [...new Set([...DINOS.map(x => x.family), ...EXTRA_FAMILIES])].filter(f => f !== d.family);
   const nameOf = x => x.alias ? `${x.name}（${x.alias}）` : x.name;
-  const trivia = pickN(TRIVIA, TRIVIA_COUNT);
+  const trivia = Progress.pick(state.player, TRIVIA_COUNT);
   const periodPicks = [d.period, ...pickN(PERIODS.filter(p => p !== d.period), 3)];
 
   const qs = [
@@ -115,7 +115,8 @@ function buildQuestions(d) {
       };
     })(),
     ...trivia.map(t => ({
-      stage: '古生物小知識', text: t.q, answer: t.a, options: shuffle([t.a, ...t.w]), explain: t.e,
+      stage: `小知識・${topicOf(t)}`, text: t.q, answer: t.a, options: shuffle([t.a, ...t.w]), explain: t.e,
+      trivia: true, review: t.review, hint: t.review ? '🔁 複習題：上次這題答錯了，這次一定可以！' : '',
     })),
     {
       stage: '最終關：學名', text: `最後一關！${d.name}的「學名」是哪一個？`,
@@ -237,6 +238,10 @@ function choose(opt, btn) {
   const correct = opt === q.answer;
   state.answers[state.idx] = { q, picked: opt, correct };
   if (correct) state.score++;
+  if (q.trivia) {
+    const wasMastered = Progress.record(state.player, q.text, correct);
+    if (correct && !wasMastered) state.learned++;
+  }
   document.querySelectorAll('#options .option').forEach(b => {
     b.disabled = true;
     if (b.querySelector('.label').textContent === q.answer) b.classList.add('right');
@@ -261,7 +266,7 @@ function showFeedback(correct, q) {
   const sad = ['嗚嗚…答錯了', '哭哭，差一點點！', '嗚哇～不是這個…'];
   fb.className = 'overlay ' + (correct ? 'is-correct' : 'is-wrong');
   fb.querySelector('.fb-char').innerHTML = boySVG(correct ? 'happy' : 'cry');
-  fb.querySelector('h2').textContent = pickN(correct ? happy : sad, 1)[0];
+  fb.querySelector('h2').textContent = q.review && correct ? '複習成功！這題你學會了 💪' : pickN(correct ? happy : sad, 1)[0];
   fb.querySelector('.fb-answer').textContent = correct ? `答案：${q.answer}` : `正確答案是：${q.answer}`;
   fb.querySelector('.fb-explain').textContent = q.explain;
   fb.querySelector('.fb-status').textContent = status;
@@ -418,10 +423,39 @@ async function renderTitleBoard() {
   if (load === titleBoardLoad) fillBoardList(list, rows, $('#player-code').value.trim());
 }
 
+// 知識圖鑑：總進度＋各主題進度
+function renderKnowledge(box, player, learnedThisGame) {
+  const s = Progress.stats(player);
+  const pct = n => Math.round((n / Math.max(1, s.total)) * 100);
+  box.innerHTML = `
+    <h3>📚 我的知識圖鑑</h3>
+    ${learnedThisGame === undefined ? '' : `<p class="kn-new">${learnedThisGame ? `這局新學會 <b>${learnedThisGame}</b> 題知識！` : '這局沒有新學會的題目，下次加油！'}</p>`}
+    <div class="kn-total"><span>已學會 <b>${s.mastered}</b> / ${s.total} 題</span><div class="bar"><i style="width:${pct(s.mastered)}%"></i></div></div>
+    <ul class="kn-topics"></ul>`;
+  const ul = box.querySelector('.kn-topics');
+  Object.entries(s.topics).forEach(([name, t]) => {
+    const li = document.createElement('li');
+    li.innerHTML = '<span class="kn-name"></span><div class="bar"><i></i></div><span class="kn-count"></span>';
+    li.querySelector('.kn-name').textContent = name;
+    li.querySelector('i').style.width = Math.round((t.mastered / t.total) * 100) + '%';
+    li.querySelector('.kn-count').textContent = `${t.mastered}/${t.total}`;
+    ul.appendChild(li);
+  });
+}
+
+function renderTitleProgress() {
+  const code = $('#player-code').value.trim();
+  const el = $('#title-progress');
+  if (!code) { el.textContent = ''; return; }
+  const s = Progress.stats(code);
+  el.textContent = s.seen ? `📚 ${code} 已學會 ${s.mastered} / ${s.total} 題知識` : `📚 題庫共有 ${s.total} 題知識等你來挑戰！`;
+}
+
 function showReport(won) {
   const d = state.dino;
   const r = $('#report');
   renderLeaderboard();
+  renderKnowledge(r.querySelector('.knowledge'), state.player, state.learned);
   r.querySelector('h2').textContent = won ? `🏛️ 任務成功！答對 ${state.score} / ${TOTAL} 題` : `😈 化石被搶走了… 答對 ${state.score} / ${TOTAL} 題`;
   r.querySelector('.stars').textContent = '⭐'.repeat(state.score) + '☆'.repeat(TOTAL - state.score);
   r.querySelector('.dino-card').innerHTML = `
@@ -456,7 +490,7 @@ function newGame() {
   const pool = DINOS.filter(d => d.id !== prev);
   state.dino = pickN(pool, 1)[0];
   state.questions = buildQuestions(state.dino);
-  state.idx = 0; state.score = 0; state.answers = []; locked = false;
+  state.idx = 0; state.score = 0; state.answers = []; state.learned = 0; locked = false;
   playIntro();
 }
 
@@ -474,14 +508,15 @@ document.addEventListener('DOMContentLoaded', () => {
   renderTitle();
   $('#player-code').value = Player.load();
   renderTitleBoard();
+  renderTitleProgress();
   $('#player-code').addEventListener('keydown', e => { if (e.key === 'Enter') startFromTitle(); });
   // 邊打邊存，就算沒按開始就離開，下次也會自動帶入
-  $('#player-code').addEventListener('input', e => { const code = e.target.value.trim(); if (code) Player.save(code); });
+  $('#player-code').addEventListener('input', e => { const code = e.target.value.trim(); if (code) Player.save(code); renderTitleProgress(); });
   $('#btn-start').onclick = startFromTitle;
   $('#btn-identify').onclick = () => { SFX.click(); renderQuestion(); };
   $('#feedback .fb-next').onclick = nextQuestion;
   $('#report .again').onclick = newGame;
-  $('#report .home').onclick = () => { SFX.click(); show('title'); renderTitleBoard(); };
+  $('#report .home').onclick = () => { SFX.click(); show('title'); renderTitleBoard(); renderTitleProgress(); };
   $('#mute').onclick = () => {
     state.muted = !state.muted;
     $('#mute').textContent = state.muted ? '🔇' : '🔊';
