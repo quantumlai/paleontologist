@@ -387,16 +387,35 @@ async function renderLeaderboard() {
   box.querySelector('.lb-me').textContent = me && mine
     ? `${state.player}：這局答對 ${state.score} 題，累積答對 ${me.total} 題（玩了 ${me.games} 局），目前第 ${mine.rank} 名！`
     : '';
+  fillBoardList(list, top, state.player);
+}
+
+function fillBoardList(list, rows, me) {
   list.innerHTML = '';
-  top.forEach(r => {
+  if (!rows.length) {
+    list.innerHTML = '<li class="lb-empty">還沒有人上榜，快來當第一名！</li>';
+    return;
+  }
+  rows.forEach(r => {
     const li = document.createElement('li');
-    li.className = r.code === state.player ? 'me' : '';
+    li.className = me && r.code === me ? 'me' : '';
     li.innerHTML = '<span class="lb-rank"></span><span class="lb-code"></span><span class="lb-total"></span>';
     li.querySelector('.lb-rank').textContent = ['🥇', '🥈', '🥉'][r.rank - 1] || r.rank;
     li.querySelector('.lb-code').textContent = r.code; // 玩家輸入的文字一律用 textContent，避免被當成 HTML
     li.querySelector('.lb-total').textContent = `${r.total} 題`;
     list.appendChild(li);
   });
+}
+
+// 開始畫面的排行榜：進首頁、從結算回首頁時都重新讀取
+let titleBoardLoad = 0;
+async function renderTitleBoard() {
+  const list = $('#title-board .lb-list');
+  const load = ++titleBoardLoad;
+  list.innerHTML = '<li class="lb-empty">讀取中…</li>';
+  let rows = [];
+  try { rows = await Leaderboard.top(10); } catch (e) { /* 讀不到就顯示空的排行榜 */ }
+  if (load === titleBoardLoad) fillBoardList(list, rows, $('#player-code').value.trim());
 }
 
 function showReport(won) {
@@ -454,12 +473,13 @@ function startFromTitle() {
 document.addEventListener('DOMContentLoaded', () => {
   renderTitle();
   $('#player-code').value = Player.load();
+  renderTitleBoard();
   $('#player-code').addEventListener('keydown', e => { if (e.key === 'Enter') startFromTitle(); });
   $('#btn-start').onclick = startFromTitle;
   $('#btn-identify').onclick = () => { SFX.click(); renderQuestion(); };
   $('#feedback .fb-next').onclick = nextQuestion;
   $('#report .again').onclick = newGame;
-  $('#report .home').onclick = () => { SFX.click(); show('title'); };
+  $('#report .home').onclick = () => { SFX.click(); show('title'); renderTitleBoard(); };
   $('#mute').onclick = () => {
     state.muted = !state.muted;
     $('#mute').textContent = state.muted ? '🔇' : '🔊';
